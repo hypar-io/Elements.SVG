@@ -16,12 +16,15 @@ namespace Elements
 
             svgDoc = new XDocument(new XDeclaration("1.0", "utf-8", "no"), svg);
             geometry = new List<Polyline>();
+            points = new List<Vector3>();
         }
         private XNamespace xmlns;
         private XElement svg;
+        private XElement css;
         private XDocument svgDoc;
 
         private List<Polyline> geometry;
+        private List<Vector3> points;
 
         public void AddGeometry(Polyline p, Style style = null)
         {
@@ -37,19 +40,48 @@ namespace Elements
             svg.Add(path);
         }
 
+        public void AddCss(string selector, List<(string, string)> values)
+        {
+            var content = "";
+            foreach (var val in values)
+            {
+                content += $"{val.Item1}:{val.Item2};";
+            }
+            svg.Add(new XElement(xmlns + "style", new XAttribute("type", "text/css"), $"{selector} {{{content}}}"));
+        }
+
+        public void AddText(Vector3 location, string content, string classes = null, string anchor = null)
+        {
+            points.Add(location);
+            var text = new XElement(xmlns + "text", content);
+            text.Add(new XAttribute("x", location.X));
+            text.Add(new XAttribute("y", -location.Y));
+
+            if (classes != null)
+            {
+                text.Add(new XAttribute("class", classes));
+            }
+            if (anchor != null)
+            {
+                text.Add(new XAttribute("text-anchor", anchor));
+            }
+            svg.Add(text);
+        }
+
         public string ToPath(Polyline p)
         {
             var resultString = "M";
             foreach (var vertex in p.Vertices)
             {
-                resultString += $" {vertex.X},{vertex.Y}";
+                resultString += $" {vertex.X},{-vertex.Y}";
             }
             if (p is Polygon pg)
             {
-                resultString += $" {pg.Vertices[0].X},{pg.Vertices[0].Y}";
+                resultString += $" {pg.Vertices[0].X},{-pg.Vertices[0].Y}";
             }
             return resultString;
         }
+
         public string SvgString()
         {
             CalcViewBox();
@@ -60,8 +92,9 @@ namespace Elements
 
         private void CalcViewBox()
         {
-            var bbox = new BBox3(geometry.SelectMany(p => p.Vertices).ToList());
-            var viewBox = $"{bbox.Min.X} {bbox.Min.Y} {bbox.Max.X - bbox.Min.X} {bbox.Max.Y - bbox.Min.Y}";
+            var bbox = new BBox3(new List<Vector3>(geometry.SelectMany(p => p.Vertices).ToList().Concat(points)));
+            var viewBox = $"{bbox.Min.X} {-bbox.Max.Y} {bbox.Max.X - bbox.Min.X} {bbox.Max.Y - bbox.Min.Y}";
+            svg.RemoveAttributes();
             svg.Add(new XAttribute("viewBox", viewBox));
         }
 
@@ -73,7 +106,16 @@ namespace Elements
             public Color Stroke { get; set; } = Colors.Black;
             public Color Fill { get; set; } = Colors.Black;
 
-            public string ToHex(Color color)
+            public Style(double strokeWidth = 1, bool enableFill = true, bool enableStroke = true, Color stroke = new Color(), Color fill = new Color())
+            {
+                this.StrokeWidth = strokeWidth;
+                this.EnableFill = enableFill;
+                this.EnableStroke = enableStroke;
+                this.Stroke = stroke;
+                this.Fill = fill;
+            }
+
+            public static string ToHex(Color color)
             {
                 return $"#{(int)(color.Red * 255):X2}{(int)(color.Green * 255):X2}{(int)(color.Blue * 255):X2}";
             }
