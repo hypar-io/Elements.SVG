@@ -26,13 +26,17 @@ namespace Elements
         private List<Polyline> geometry;
         private List<Vector3> points;
 
-        public void AddGeometry(Polyline p, Style style = null)
+        public void AddGeometry(Polyline p, string classes = null, Style style = null)
         {
             geometry.Add(p);
             var path = new XElement(xmlns +
                 "path",
                 new XAttribute("d", ToPath(p))
             );
+            if (classes != null)
+            {
+                path.Add(new XAttribute("class", classes));
+            }
             if (style != null)
             {
                 path.Add(new XAttribute("style", style.ToString()));
@@ -40,17 +44,13 @@ namespace Elements
             svg.Add(path);
         }
 
-        public void AddCss(string selector, List<(string, string)> values)
+        public void AddStyle(string selector, Style style)
         {
-            var content = "";
-            foreach (var val in values)
-            {
-                content += $"{val.Item1}:{val.Item2};";
-            }
+            var content = style.ToString();
             svg.Add(new XElement(xmlns + "style", new XAttribute("type", "text/css"), $"{selector} {{{content}}}"));
         }
 
-        public void AddText(Vector3 location, string content, string classes = null, string anchor = null)
+        public void AddText(Vector3 location, string content, string classes = null, string anchor = null, Style style = null)
         {
             points.Add(location);
             var text = new XElement(xmlns + "text", content);
@@ -64,6 +64,10 @@ namespace Elements
             if (anchor != null)
             {
                 text.Add(new XAttribute("text-anchor", anchor));
+            }
+            if (style != null)
+            {
+                text.Add(new XAttribute("style", style.ToString()));
             }
             svg.Add(text);
         }
@@ -100,19 +104,27 @@ namespace Elements
 
         public class Style
         {
-            public double StrokeWidth { get; set; } = 1;
-            public bool EnableFill { get; set; } = true;
-            public bool EnableStroke { get; set; } = true;
-            public Color Stroke { get; set; } = Colors.Black;
-            public Color Fill { get; set; } = Colors.Black;
+            public double? StrokeWidth { get; set; } = null;
+            public Color? Stroke { get; set; } = null;
+            public Color? Fill { get; set; } = null;
+            public string FontSize { get; set; } = null;
+            public string FontFamily { get; set; } = null;
 
-            public Style(double strokeWidth = 1, bool enableFill = true, bool enableStroke = true, Color stroke = new Color(), Color fill = new Color())
+            public Style() { }
+
+            public Style(
+                double? strokeWidth = null,
+                Color? stroke = null,
+                Color? fill = null,
+                string fontSize = "",
+                string fontFamily = ""
+                )
             {
                 this.StrokeWidth = strokeWidth;
-                this.EnableFill = enableFill;
-                this.EnableStroke = enableStroke;
                 this.Stroke = stroke;
                 this.Fill = fill;
+                this.FontSize = fontSize;
+                this.FontFamily = fontFamily;
             }
 
             public static string ToHex(Color color)
@@ -122,11 +134,35 @@ namespace Elements
 
             public override string ToString()
             {
-                return $"stroke:{(EnableStroke ? ToHex(Stroke) : "none")};" +
-                       $"fill:{(EnableFill ? ToHex(Fill) : "none")};" +
-                       $"fill-opacity:{Fill.Alpha};" +
-                       $"stroke-opacity:{Stroke.Alpha};" +
-                       $"stroke-width:{StrokeWidth}";
+                var str = "";
+
+                if (this.StrokeWidth != null)
+                {
+                    str += $"stroke-width: {this.StrokeWidth};";
+                }
+                if (this.Stroke != null)
+                {
+                    str += $"stroke: {ToHex((Color)this.Stroke)};";
+                    str += $"stroke-opacity: {((Color)this.Stroke).Alpha};";
+                }
+
+                if (this.Fill != null)
+                {
+                    str += $"fill: {ToHex((Color)this.Fill)};";
+                    str += $"fill-opacity: {((Color)this.Fill).Alpha};";
+                }
+
+                if (this.FontFamily != "")
+                {
+                    str += $"font-family: {this.FontFamily};";
+                }
+
+                if (this.FontSize != "")
+                {
+                    str += $"font-size: {this.FontSize};";
+                }
+
+                return str;
             }
         }
     }

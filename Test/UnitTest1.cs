@@ -20,8 +20,8 @@ namespace Test
             });
             svg.AddGeometry(Polygon.Rectangle(10, 10), new SVG.Style
             {
-                EnableFill = false,
-                EnableStroke = false
+                // EnableFill = false,
+                // EnableStroke = false
             });
             var svgString = svg.SvgString();
             Console.WriteLine("🔵");
