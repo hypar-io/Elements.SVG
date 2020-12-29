@@ -3,10 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using System.Text;
 using Elements.Geometry;
 
 namespace Elements
 {
+    public class Utf8StringWriter : StringWriter
+    {
+        public Utf8StringWriter() : base()
+        {
+        }
+        public override Encoding Encoding { get { return Encoding.UTF8; } }
+    }
+
     public class SVG
     {
         public SVG()
@@ -20,7 +29,6 @@ namespace Elements
         }
         private XNamespace xmlns;
         private XElement svg;
-        private XElement css;
         private XDocument svgDoc;
 
         private List<Polyline> geometry;
@@ -89,7 +97,7 @@ namespace Elements
         public string SvgString()
         {
             CalcViewBox();
-            var wr = new StringWriter();
+            var wr = new Utf8StringWriter();
             svgDoc.Save(wr);
             return wr.ToString();
         }
