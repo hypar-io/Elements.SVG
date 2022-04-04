@@ -128,8 +128,8 @@ namespace Elements
                 double? strokeWidth = null,
                 Color? stroke = null,
                 Color? fill = null,
-                string fontSize = "",
-                string fontFamily = ""
+                string fontSize = null,
+                string fontFamily = null
                 )
             {
                 this.StrokeWidth = strokeWidth;
@@ -163,13 +163,17 @@ namespace Elements
                     str += $"fill: {ToHex((Color)this.Fill)};";
                     str += $"fill-opacity: {((Color)this.Fill).Alpha};";
                 }
+                else
+                {
+                    str += $"fill: none;";
+                }
 
-                if (this.FontFamily != "")
+                if (this.FontFamily != null)
                 {
                     str += $"font-family: {this.FontFamily};";
                 }
 
-                if (this.FontSize != "")
+                if (this.FontSize != null)
                 {
                     str += $"font-size: {this.FontSize};";
                 }
