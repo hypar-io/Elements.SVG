@@ -12,13 +12,13 @@ namespace Test
         {
             var shape = Polygon.Rectangle(5, 8);
             var svg = new SVG();
-            svg.AddGeometry(shape, new SVG.Style
+            svg.AddGeometry(shape, null, new SVG.Style
             {
                 Fill = Colors.Red,
                 Stroke = Colors.Blue,
                 StrokeWidth = 2
             });
-            svg.AddGeometry(Polygon.Rectangle(10, 10), new SVG.Style
+            svg.AddGeometry(Polygon.Rectangle(10, 10), null, new SVG.Style
             {
                 // EnableFill = false,
                 // EnableStroke = false

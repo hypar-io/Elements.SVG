@@ -118,6 +118,10 @@ namespace Elements
             public string FontSize { get; set; } = null;
             public string FontFamily { get; set; } = null;
 
+            public string TextAnchor { get; set; } = null;
+
+            public string DominantBaseline { get; set; } = null;
+
             public Style() { }
 
             public Style(
@@ -168,6 +172,14 @@ namespace Elements
                 if (this.FontSize != "")
                 {
                     str += $"font-size: {this.FontSize};";
+                }
+                if (this.TextAnchor != null)
+                {
+                    str += $"text-anchor: {this.TextAnchor};";
+                }
+                if (this.DominantBaseline != null)
+                {
+                    str += $"dominant-baseline: {this.DominantBaseline};";
                 }
 
                 return str;
